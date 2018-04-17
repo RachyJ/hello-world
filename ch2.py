@@ -2,6 +2,7 @@ import json
 from pandas import DataFrame, Series
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 path = 'dataset/ch2.txt'
 records = [json.loads(line) for line in open(path)]
@@ -30,5 +31,17 @@ results = Series([x.split()[0] for x in frame.a.dropna()])
 
 cframe = frame[frame.a.notnull()]
 operating_system = np.where(cframe['a'].str.contains('Windows'),'Windows','Not Windows') # check if the string contains 'Windows'
-operating_system[:5]
+# print(operating_system[:5]) # return the first 5 records whether windows or not
 
+
+by_tz_os = cframe.groupby(['tz', operating_system]) # group by timezone and os
+agg_counts = by_tz_os.size().unstack().fillna(0) # use unstack to reshape the results into a table; use size to coumpute the counts
+# print(agg_counts[:10])
+
+# use to sort in ascending order
+indexer = agg_counts.sum(1).argsort()
+# print(indexer[:10])
+
+# slice the last 10 rows
+count_subset = agg_counts.take(indexer)[-10:0] # use take() to select rows in an order
+print(count_subset)
